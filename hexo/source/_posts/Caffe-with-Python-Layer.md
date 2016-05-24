@@ -1,6 +1,6 @@
 title: 在Caffe中使用Python Layer
 date: 2016-04-14 11:10:01
-tags: 机器学习,深度学习,Caffe
+tags: [机器学习,深度学习,Caffe]
 ---
 
 #### Caffe通过Boost中的Boost.Python模块来支持使用Python定义Layer：
