@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" >
+  <title>在torch中使用cuda进行训练 | Wei Jin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="0. 说明本文介绍hdf5文件的读取、网络的定义与训练和测试，并强调了如何使用cuda对网络的训练、测试进行加速。
+1. 过程与代码
+1 安装hdf5按照官方tutorial安装torch对hdf5格式文件的支持。
+2 引入必要 package 并读入hdf5数据
+12345require &apos;torch&apos;;----如果是在itorch或itorch notbook中自动引入torchrequire">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在torch中使用cuda进行训练">
+<meta property="og:url" content="http://withwsf.github.io/2015/12/29/在torch中使用cuda进行训练/index.html">
+<meta property="og:site_name" content="Wei Jin">
+<meta property="og:description" content="0. 说明本文介绍hdf5文件的读取、网络的定义与训练和测试，并强调了如何使用cuda对网络的训练、测试进行加速。
+1. 过程与代码
+1 安装hdf5按照官方tutorial安装torch对hdf5格式文件的支持。
+2 引入必要 package 并读入hdf5数据
+12345require &apos;torch&apos;;----如果是在itorch或itorch notbook中自动引入torchrequire">
+<meta property="og:updated_time" content="2016-11-29T13:47:45.944Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="在torch中使用cuda进行训练">
+<meta name="twitter:description" content="0. 说明本文介绍hdf5文件的读取、网络的定义与训练和测试，并强调了如何使用cuda对网络的训练、测试进行加速。
+1. 过程与代码
+1 安装hdf5按照官方tutorial安装torch对hdf5格式文件的支持。
+2 引入必要 package 并读入hdf5数据
+12345require &apos;torch&apos;;----如果是在itorch或itorch notbook中自动引入torchrequire">
+  
+    <link rel="alternative" href="/atom.xml" title="Wei Jin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="http://www.picgifs.com/clip-art/cartoons/south-park/clip-art-south-park-362717.jpg">
+  
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="http://img01.deviantart.net/8e9f/i/2012/194/0/c/jake_the_dog_desktop_picture_by_partack-d571ypf.jpg" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">Withwsf</a></h1>
+		</hgroup>
+
+		
+		<p class="header-subtitle">We don&#39;t konw our destiny</p>
+		
+
+		
+			<div class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>Tags</li>
+						
+						
+						<li>Über</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives">所有文章</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<div class="social">
+							
+								<a class="zhihu" target="_blank" href="https://www.zhihu.com/people/wei_jin" title="zhihu">zhihu</a>
+					        
+						</div>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/C/" style="font-size: 16.67px;">C++</a> <a href="/tags/Caffe/" style="font-size: 16.67px;">Caffe</a> <a href="/tags/Python/" style="font-size: 10px;">Python</a> <a href="/tags/Torch/" style="font-size: 13.33px;">Torch</a> <a href="/tags/数据挖掘/" style="font-size: 10px;">数据挖掘</a> <a href="/tags/机器学习/" style="font-size: 20px;">机器学习</a> <a href="/tags/深度学习/" style="font-size: 13.33px;">深度学习</a> <a href="/tags/阅读经典/" style="font-size: 10px;">阅读经典</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">基本上无害 (withwsf#gmail.com)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide">Withwsf</h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<div class="profilepic">
+			
+				<img lazy-src="http://img01.deviantart.net/8e9f/i/2012/194/0/c/jake_the_dog_desktop_picture_by_partack-d571ypf.jpg" class="js-avatar">
+			
+			</div>
+			<hgroup>
+			  <h1 class="header-author">Withwsf</h1>
+			</hgroup>
+			
+			<p class="header-subtitle">We don&#39;t konw our destiny</p>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives">所有文章</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+				<div class="social">
+					
+						<a class="zhihu" target="_blank" href="https://www.zhihu.com/people/wei_jin" title="zhihu">zhihu</a>
+			        
+				</div>
+			</nav>
+		</header>				
+	</div>
+</nav>
+
+      <div class="body-wrap"><article id="post-在torch中使用cuda进行训练" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/12/29/在torch中使用cuda进行训练/" class="article-date">
+  	<time datetime="2015-12-29T07:50:33.000Z" itemprop="datePublished">2015-12-29</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      在torch中使用cuda进行训练
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Torch/">Torch</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/机器学习/">机器学习</a></li></ul>
+	</div>
+
+        
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="0-__u8BF4_u660E"><a href="#0-__u8BF4_u660E" class="headerlink" title="0. 说明"></a>0. 说明</h3><p>本文介绍<strong>hdf5文件的读取</strong>、<strong>网络的定义</strong>与<strong>训练</strong>和<strong>测试</strong>，并强调了如何使用<strong>cuda</strong>对网络的训练、测试进行加速。</p>
+<h3 id="1-__u8FC7_u7A0B_u4E0E_u4EE3_u7801"><a href="#1-__u8FC7_u7A0B_u4E0E_u4EE3_u7801" class="headerlink" title="1. 过程与代码"></a>1. 过程与代码</h3><ul>
+<li><strong>1 安装hdf5</strong><br>按照<a href="https://github.com/deepmind/torch-hdf5/blob/master/doc/usage.md" target="_blank" rel="external">官方tutorial</a>安装torch对hdf5格式文件的支持。</li>
+<li><p><strong>2 引入必要 package 并读入hdf5数据</strong></p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">require</span> <span class="string">'torch'</span>;<span class="comment">----如果是在itorch或itorch notbook中自动引入torch</span></span><br><span class="line"><span class="built_in">require</span> <span class="string">'hdf5'</span>;<span class="comment">----hdf5支持</span></span><br><span class="line"><span class="built_in">require</span> <span class="string">'nn'</span>; <span class="comment">----neural network modules 的实现</span></span><br><span class="line"><span class="built_in">require</span> <span class="string">'cutorch'</span>;<span class="comment">----cuda backend支持</span></span><br><span class="line"><span class="built_in">require</span> <span class="string">'cunn'</span>;<span class="comment">----neural network modules的cuda实现</span></span><br></pre></td></tr></table></figure>
+<p>下面读入数据，假设train和test数据都是按照我<a href="http://withwsf.github.io/2015/12/23/torch-hdf5/">上篇文章</a>的格式所存储：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">myFiletrian=hdf5.open(<span class="string">'mytrain.h5'</span>,<span class="string">'r'</span>)<span class="comment">----读取hdf5文件</span></span><br><span class="line">myFiletest=hdf5.open(<span class="string">'mytest.h5'</span>,<span class="string">'r'</span>)</span><br><span class="line"><span class="comment">----将读入的hdf5存到两个Table： trainset和testset中</span></span><br><span class="line">trainset=&#123;data=myFiletrian:read(<span class="string">'data'</span>):all(),label=myFiletrian:read(<span class="string">'label'</span>):all():byte()&#125;</span><br><span class="line">testset=&#123;data=myFiletest:read(<span class="string">'data'</span>):all(),label=myFiletest:read(<span class="string">'label'</span>):all():byte()&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>3 重载trainset的_index操作符并添加成员函数size()</strong><br>Lua中也存在面向对象的概念，Lua中的类可以通过Table+function模拟出来。这里将trainset视作一个类的对象，torch要求这个类有方法trainset:size()可以返回样本个数，使用操作符trainset[i]时返回第i个样本。</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">setmetatable</span>(trainset, <span class="comment">----重载index操作符</span></span><br><span class="line">    &#123;__index = <span class="function"><span class="keyword">function</span><span class="params">(t, i)</span></span> </span><br><span class="line">                    <span class="keyword">return</span> &#123;t.data[i], t.label[i]&#125; </span><br><span class="line">                <span class="keyword">end</span>&#125;</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">trainset:size</span><span class="params">()</span></span><span class="comment">----添加成员函数 size()</span></span><br><span class="line">    <span class="keyword">return</span> self.data:size(<span class="number">1</span>)</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>4 建立一个网络</strong><br>我使用Torch的主要原因是因为Torch有3D conv模块，所以这里以模仿<strong>LeNet</strong>的3D conv网络为例：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">net=nn.Sequential()</span><br><span class="line">net:add(nn.VolumetricConvolution(<span class="number">3</span>,<span class="number">5</span>,<span class="number">3</span>,<span class="number">3</span>,<span class="number">3</span>))<span class="comment">----添加3D conv层，输入3个feature cube，输出5个feature cube，filter size为3*3*3</span></span><br><span class="line">net:add(nn.VolumetricMaxPooling(<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>))<span class="comment">----添加3D MaxPooling层</span></span><br><span class="line">net:add(nn.VolumetricConvolution(<span class="number">5</span>,<span class="number">16</span>,<span class="number">4</span>,<span class="number">4</span>,<span class="number">4</span>))</span><br><span class="line">net:add(nn.VolumetricMaxPooling(<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>))</span><br><span class="line">net:add(nn.View(<span class="number">16</span>*<span class="number">4</span>*<span class="number">4</span>*<span class="number">4</span>))<span class="comment">----连接全连接层之前要使用nn.View()进行reshpe，nn.View()里面的参数需要根据</span></span><br><span class="line"><span class="comment">---（接上）数据的尺寸和前面的层来计算，比如在这里我是用的训练数据是3*24*24*24的cube,分别经过3*3*3和4*4*4 filter尺寸的两次卷积和两次maxpooling之后最终的输出是16个4*4*4*的feature cube ，那么nn.View()里面的参数就应该是16*4*4*4</span></span><br><span class="line">net:add(nn.Linear(<span class="number">16</span>*<span class="number">4</span>*<span class="number">4</span>*<span class="number">4</span>,<span class="number">120</span>))</span><br><span class="line">net:add(nn.Linear(<span class="number">120</span>,<span class="number">84</span>))<span class="comment">----nn.Linear(a,b)，设置a个输入neurons和b个输出neurons的全全连接层</span></span><br><span class="line">net:add(nn.Linear(<span class="number">84</span>,<span class="number">7</span>))</span><br><span class="line">net:add(nn.LogSoftMax())<span class="comment">-----输出每个类别概率P的log函数值log(P)</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>5 建立一个Solver</strong></p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">criterion=nn.ClassNLLCriterion()<span class="comment">----使用negatice log--likehood criterion ,即计算cross-entropy损失</span></span><br><span class="line"><span class="comment">----注意！Torch中训练数据的Label应该从1开始，比如有四类样本，那么label应该是1、2、3、4，不能从0开始，否则报错</span></span><br><span class="line">trainer=nn.StochasticGradient(net,criterion)<span class="comment">----使用随机梯度下降</span></span><br><span class="line">trainer.learningRate=<span class="number">0.001</span><span class="comment">----设置solver参数</span></span><br><span class="line">trainer.maxIteration=<span class="number">10</span><span class="comment">----迭代epoch数</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>6 将net、criterion、trainset和testset移动到GPU中</strong><br>如果要使用GPU加速，net、criterion、trainset和testset都需要移动到CPU内存中去</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">trainset.data=trainset.data:cuda()</span><br><span class="line">trainset.label=trainset.label:cuda()</span><br><span class="line">testset.label=trainset.label:cuda()</span><br><span class="line">testset.data=testset.data:cuda()</span><br><span class="line">criterion=criterion:cuda()</span><br><span class="line">net=net:cuda()</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>以trainset为例，移动到GPU之后是形式如下的对象</p>
+<blockquote>
+<p>{<br>  data : CudaTensor - size: 10500x3x24x24x24<br>  size : function: 0x42832ef0<br>  label : CudaTensor - size: 10500x1<br>}</p>
+</blockquote>
+<ul>
+<li><strong>7 训练并测试网络</strong><br>有了上面的准备，网络的训练十分简单：<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trainer:train(trainset)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<blockquote>
+<p>训练过程中输出如下：<br>Out[18]:StochasticGradient: training<br>Out[18]:current error = 1.9459465204875<br>Out[18]:current error = 1.941716547001<br>Out[18]:current error = 1.921697193475<br>Out[18]:current error = 1.8641934820811<br>Out[18]:current error = 1.5424795499416<br>Out[18]:current error = 1.3549344599815<br>Out[18]:current error = 1.2374953328995<br>Out[18]:current error = 1.152671923592<br>Out[18]:current error = 1.094293069022<br>Out[18]:current error = 1.0469601832571<br>StochasticGradient: you have reached the maximum number of iterations<br>training error = 1.0469601832571</p>
+</blockquote>
+<p>由于设置的最大epoch是10，所以在对trainset迭代了10次之后训练就结束了，接下来是网络的测试：<br><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">correct = <span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> i=<span class="number">1</span>,<span class="number">3500</span> <span class="keyword">do</span> <span class="comment">----我的测试集有3500个cube</span></span><br><span class="line">    <span class="keyword">local</span> groundtruth = testset.label[i][<span class="number">1</span>]</span><br><span class="line">    <span class="keyword">local</span> prediction = net:forward(testset.data[i])</span><br><span class="line">    <span class="keyword">local</span> confidences, indices = torch.sort(prediction, <span class="keyword">true</span>)</span><br><span class="line">    <span class="keyword">if</span> groundtruth == indices[<span class="number">1</span>] <span class="keyword">then</span></span><br><span class="line">       correct = correct + <span class="number">1</span> </span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="built_in">print</span>(correct, <span class="number">100</span>*correct/<span class="number">3500</span> .. <span class="string">' % '</span>)</span><br></pre></td></tr></table></figure></p>
+<h3 id="2-__u603B_u7ED3"><a href="#2-__u603B_u7ED3" class="headerlink" title="2. 总结"></a>2. 总结</h3><p>使用Torch训练过程包括数据载入，网络定义，trainer定义，训练、测试几个部分，如果使用GPU加速，要将数据等对象移动到GPU中。</p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/12/29/数据挖掘中的数据预处理/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption"><</strong>
+      <div class="article-nav-title">
+        
+          数据挖掘中的数据预处理
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/12/23/torch-hdf5/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">为Torch创建hdf5训练文件</div>
+      <strong class="article-nav-caption">></strong>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<div class="share_jia">
+	<!-- JiaThis Button BEGIN -->
+	<div class="jiathis_style">
+		<span class="jiathis_txt">分享到: &nbsp; </span>
+		<a class="jiathis_button_facebook"></a> 
+    <a class="jiathis_button_twitter"></a>
+    <a class="jiathis_button_plus"></a> 
+    <a class="jiathis_button_tsina"></a>
+		<a class="jiathis_button_cqq"></a>
+		<a class="jiathis_button_douban"></a>
+		<a class="jiathis_button_weixin"></a>
+		<a class="jiathis_button_tumblr"></a>
+    <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	</div>
+	<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=1405949716054953" charset="utf-8"></script>
+	<!-- JiaThis Button END -->
+</div>
+
+
+
+
+
+
+<div class="duoshuo">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="在torch中使用cuda进行训练" data-title="在torch中使用cuda进行训练" data-url="http://withwsf.github.io/2015/12/29/在torch中使用cuda进行训练/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"true"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+    	<div class="footer-left">
+    		&copy; 2016 Withwsf
+    	</div>
+      	<div class="footer-right">
+      		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
+      	</div>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+
+
+<script>
+	var yiliaConfig = {
+		fancybox: true,
+		mathjax: true,
+		animate: true,
+		isHome: false,
+		isPost: true,
+		isArchive: false,
+		isTag: false,
+		isCategory: false,
+		open_in_new: true
+	}
+</script>
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js" type="text/javascript"></script>
+<script src="/js/main.js" type="text/javascript"></script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+  </div>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" >
+  <title>在Caffe中使用Python Layer | Wei Jin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Caffe通过Boost中的Boost.Python模块来支持使用Python定义Layer：
+使用C++增加新的Layer繁琐、耗时而且很容易出错
+开发速度与执行速度之间的trade-off
+
+编译支持Python Layer的Caffe如果是首次编译，修改Caffe根目录下的Makefile.cinfig，uncomment1WITH_PYTHON_LAYER:=1
+ 如果已经编译过12mak">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在Caffe中使用Python Layer">
+<meta property="og:url" content="http://withwsf.github.io/2016/04/14/Caffe-with-Python-Layer/index.html">
+<meta property="og:site_name" content="Wei Jin">
+<meta property="og:description" content="Caffe通过Boost中的Boost.Python模块来支持使用Python定义Layer：
+使用C++增加新的Layer繁琐、耗时而且很容易出错
+开发速度与执行速度之间的trade-off
+
+编译支持Python Layer的Caffe如果是首次编译，修改Caffe根目录下的Makefile.cinfig，uncomment1WITH_PYTHON_LAYER:=1
+ 如果已经编译过12mak">
+<meta property="og:updated_time" content="2016-11-29T13:47:45.928Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="在Caffe中使用Python Layer">
+<meta name="twitter:description" content="Caffe通过Boost中的Boost.Python模块来支持使用Python定义Layer：
+使用C++增加新的Layer繁琐、耗时而且很容易出错
+开发速度与执行速度之间的trade-off
+
+编译支持Python Layer的Caffe如果是首次编译，修改Caffe根目录下的Makefile.cinfig，uncomment1WITH_PYTHON_LAYER:=1
+ 如果已经编译过12mak">
+  
+    <link rel="alternative" href="/atom.xml" title="Wei Jin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="http://www.picgifs.com/clip-art/cartoons/south-park/clip-art-south-park-362717.jpg">
+  
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="http://img01.deviantart.net/8e9f/i/2012/194/0/c/jake_the_dog_desktop_picture_by_partack-d571ypf.jpg" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">Withwsf</a></h1>
+		</hgroup>
+
+		
+		<p class="header-subtitle">We don&#39;t konw our destiny</p>
+		
+
+		
+			<div class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>Tags</li>
+						
+						
+						<li>Über</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives">所有文章</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<div class="social">
+							
+								<a class="zhihu" target="_blank" href="https://www.zhihu.com/people/wei_jin" title="zhihu">zhihu</a>
+					        
+						</div>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/C/" style="font-size: 16.67px;">C++</a> <a href="/tags/Caffe/" style="font-size: 16.67px;">Caffe</a> <a href="/tags/Python/" style="font-size: 10px;">Python</a> <a href="/tags/Torch/" style="font-size: 13.33px;">Torch</a> <a href="/tags/数据挖掘/" style="font-size: 10px;">数据挖掘</a> <a href="/tags/机器学习/" style="font-size: 20px;">机器学习</a> <a href="/tags/深度学习/" style="font-size: 13.33px;">深度学习</a> <a href="/tags/阅读经典/" style="font-size: 10px;">阅读经典</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">基本上无害 (withwsf#gmail.com)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide">Withwsf</h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<div class="profilepic">
+			
+				<img lazy-src="http://img01.deviantart.net/8e9f/i/2012/194/0/c/jake_the_dog_desktop_picture_by_partack-d571ypf.jpg" class="js-avatar">
+			
+			</div>
+			<hgroup>
+			  <h1 class="header-author">Withwsf</h1>
+			</hgroup>
+			
+			<p class="header-subtitle">We don&#39;t konw our destiny</p>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives">所有文章</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+				<div class="social">
+					
+						<a class="zhihu" target="_blank" href="https://www.zhihu.com/people/wei_jin" title="zhihu">zhihu</a>
+			        
+				</div>
+			</nav>
+		</header>				
+	</div>
+</nav>
+
+      <div class="body-wrap"><article id="post-Caffe-with-Python-Layer" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/04/14/Caffe-with-Python-Layer/" class="article-date">
+  	<time datetime="2016-04-14T03:10:01.000Z" itemprop="datePublished">2016-04-14</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      在Caffe中使用Python Layer
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Caffe/">Caffe</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/机器学习/">机器学习</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/深度学习/">深度学习</a></li></ul>
+	</div>
+
+        
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h4 id="Caffe_u901A_u8FC7Boost_u4E2D_u7684Boost-Python_u6A21_u5757_u6765_u652F_u6301_u4F7F_u7528Python_u5B9A_u4E49Layer_uFF1A"><a href="#Caffe_u901A_u8FC7Boost_u4E2D_u7684Boost-Python_u6A21_u5757_u6765_u652F_u6301_u4F7F_u7528Python_u5B9A_u4E49Layer_uFF1A" class="headerlink" title="Caffe通过Boost中的Boost.Python模块来支持使用Python定义Layer："></a>Caffe通过Boost中的Boost.Python模块来支持使用Python定义Layer：</h4><ul>
+<li>使用C++增加新的Layer<strong>繁琐</strong>、<strong>耗时</strong>而且很容易<strong>出错</strong></li>
+<li><strong>开发速度</strong>与<strong>执行速度</strong>之间的<strong>trade-off</strong></li>
+</ul>
+<h4 id="u7F16_u8BD1_u652F_u6301Python_Layer_u7684Caffe"><a href="#u7F16_u8BD1_u652F_u6301Python_Layer_u7684Caffe" class="headerlink" title="编译支持Python Layer的Caffe"></a>编译支持Python Layer的Caffe</h4><p>如果是首次编译，修改Caffe根目录下的Makefile.cinfig，uncomment<br><figure class="highlight avrasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="label">WITH_PYTHON_LAYER:</span>=<span class="number">1</span></span><br></pre></td></tr></table></figure></p>
+<p> 如果已经编译过<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">make</span> clean</span><br><span class="line">WITH_PYTHON_LAYER=<span class="number">1</span> <span class="built_in">make</span>&amp;&amp; <span class="built_in">make</span> pycaffe</span><br></pre></td></tr></table></figure></p>
+<h4 id="u4F7F_u7528Python_Layer"><a href="#u4F7F_u7528Python_Layer" class="headerlink" title="使用Python Layer"></a>使用Python Layer</h4><p>在网络的prototxt文件中添加一个Python定义的loss层如下：<br><figure class="highlight ocaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">layer&#123;</span><br><span class="line"><span class="keyword">type</span>: ’<span class="type">Python'</span></span><br><span class="line">name: <span class="symbol">'loss'</span></span><br><span class="line">top: <span class="symbol">'loss'</span></span><br><span class="line">bottom： ‘ipx’</span><br><span class="line">bottom: <span class="symbol">'ipy'</span></span><br><span class="line">python_param&#123;</span><br><span class="line">#<span class="keyword">module</span>的名字，通常是定义<span class="type">Layer</span>的.py文件的文件名，需要在$<span class="type">PYTHONPATH</span>下</span><br><span class="line"><span class="keyword">module</span>: <span class="symbol">'pyloss'</span></span><br><span class="line">#layer的名字---<span class="keyword">module</span>中的类名</span><br><span class="line">layer: <span class="symbol">'EuclideanLossLayer'</span></span><br><span class="line">&#125;</span><br><span class="line">loss_weight: <span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="u5B9A_u4E49Python_Layer"><a href="#u5B9A_u4E49Python_Layer" class="headerlink" title="定义Python Layer"></a>定义Python Layer</h4><p>根据上面的要求，我们在$PYTHONPAT在创建pyloss.py，并在其中定义EuclideanLossLayer。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> caffe</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EuclideadLossLayer</span><span class="params">(caffe.Layer)</span>:</span><span class="comment">#EuclideadLossLayer没有权值，反向传播过程中不需要进行权值的更新。如果需要定义需要更新自身权值的层，最好还是使用C++</span></span><br><span class="line">       <span class="function"><span class="keyword">def</span> <span class="title">setup</span><span class="params">(self,bottom,top)</span>:</span></span><br><span class="line">           <span class="comment">#在网络运行之前根据相关参数参数进行layer的初始化</span></span><br><span class="line">           <span class="keyword">if</span> len(bottom) !=<span class="number">2</span>:</span><br><span class="line">              <span class="keyword">raise</span> exception(<span class="string">"Need two inputs to compute distance"</span>)</span><br><span class="line">       <span class="function"><span class="keyword">def</span> <span class="title">reshape</span><span class="params">(self,bottom,top)</span>:</span></span><br><span class="line">           <span class="comment">#在forward之前调用，根据bottom blob的尺寸调整中间变量和top blob的尺寸</span></span><br><span class="line">           <span class="keyword">if</span> bottom[<span class="number">0</span>].count !=bottom[<span class="number">1</span>].count:</span><br><span class="line">              <span class="keyword">raise</span> exception(<span class="string">"Inputs must have the same dimension."</span>)</span><br><span class="line">           self.diff=np.zeros_like(bottom[<span class="number">0</span>].date,dtype=np.float32)</span><br><span class="line">           top[<span class="number">0</span>].reshape(<span class="number">1</span>)</span><br><span class="line">       <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self,bottom,top)</span>:</span></span><br><span class="line">           <span class="comment">#网络的前向传播</span></span><br><span class="line">            self.diff[...]=bottom[<span class="number">0</span>].data-bottom[<span class="number">1</span>].data</span><br><span class="line">            top[<span class="number">0</span>].data[...]=np.sum(self.diff**<span class="number">2</span>)/bottom[<span class="number">0</span>].num/<span class="number">2.</span></span><br><span class="line">       <span class="function"><span class="keyword">def</span> <span class="title">backward</span><span class="params">(self,top,propagate_down,bootm)</span>:</span></span><br><span class="line">            <span class="comment">#网络的前向传播</span></span><br><span class="line">             <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">2</span>):</span><br><span class="line">                 <span class="keyword">if</span> <span class="keyword">not</span> propagate_down[i]:</span><br><span class="line">                         <span class="keyword">continue</span></span><br><span class="line">                 <span class="keyword">if</span> i==<span class="number">0</span>:</span><br><span class="line">                    sign=<span class="number">1</span></span><br><span class="line">                 <span class="keyword">else</span>:</span><br><span class="line">                    sign=-<span class="number">1</span></span><br><span class="line">                  bottom[i].diff[...]=sign*self.diff/bottom[i].num</span><br></pre></td></tr></table></figure></p>
+<h4 id="u539F_u7406_u6D45_u6790"><a href="#u539F_u7406_u6D45_u6790" class="headerlink" title="原理浅析"></a>原理浅析</h4><p>阅读caffe源码python<em>layer.hpp可以知道，类PythonLayer继承自Layer，并且新增私有变量boost::python::object self</em>来表示我们自己定义的python layer的内存对象。</p>
+<p>类PythonLayer类的成员函数LayerSetUP, Reshape, Forward_cpu和Backward_cpu分别是对我们自己定义的python layer中成员函数setup, reshape, forward和backward的封装调用。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> PythonLayer : <span class="keyword">public</span> Layer&lt;Dtype&gt; &#123;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  PythonLayer(PyObject* self, <span class="keyword">const</span> LayerParameter&amp; param)</span><br><span class="line">      : Layer&lt;Dtype&gt;(param), self_(bp::handle&lt;&gt;(bp::borrowed(self))) &#123; &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">LayerSetUp</span><span class="params">(<span class="keyword">const</span> <span class="built_in">vector</span>&lt;Blob&lt;Dtype&gt;*&gt;&amp; bottom,</span><br><span class="line">      <span class="keyword">const</span> <span class="built_in">vector</span>&lt;Blob&lt;Dtype&gt;*&gt;&amp; top)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// Disallow PythonLayer in MultiGPU training stage, due to GIL issues</span></span><br><span class="line">    <span class="comment">// Details: https://github.com/BVLC/caffe/issues/2936</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>-&gt;phase_ == TRAIN &amp;&amp; Caffe::solver_count() &gt; <span class="number">1</span></span><br><span class="line">        &amp;&amp; !ShareInParallel()) &#123;</span><br><span class="line">      LOG(FATAL) &lt;&lt; <span class="string">"PythonLayer is not implemented in Multi-GPU training"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    self_.attr(<span class="string">"param_str"</span>) = bp::str(</span><br><span class="line">        <span class="keyword">this</span>-&gt;layer_param_.python_param().param_str());</span><br><span class="line">    self_.attr(<span class="string">"setup"</span>)(bottom, top);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">Reshape</span><span class="params">(<span class="keyword">const</span> <span class="built_in">vector</span>&lt;Blob&lt;Dtype&gt;*&gt;&amp; bottom,</span><br><span class="line">      <span class="keyword">const</span> <span class="built_in">vector</span>&lt;Blob&lt;Dtype&gt;*&gt;&amp; top)</span> </span>&#123;</span><br><span class="line">    self_.attr(<span class="string">"reshape"</span>)(bottom, top);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">inline</span> <span class="keyword">bool</span> <span class="title">ShareInParallel</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>-&gt;layer_param_.python_param().share_in_parallel();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keyword">char</span>* <span class="title">type</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> <span class="string">"Python"</span>; &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">protected</span>:</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">Forward_cpu</span><span class="params">(<span class="keyword">const</span> <span class="built_in">vector</span>&lt;Blob&lt;Dtype&gt;*&gt;&amp; bottom,</span><br><span class="line">      <span class="keyword">const</span> <span class="built_in">vector</span>&lt;Blob&lt;Dtype&gt;*&gt;&amp; top)</span> </span>&#123;</span><br><span class="line">    self_.attr(<span class="string">"forward"</span>)(bottom, top);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">Backward_cpu</span><span class="params">(<span class="keyword">const</span> <span class="built_in">vector</span>&lt;Blob&lt;Dtype&gt;*&gt;&amp; top,</span><br><span class="line">      <span class="keyword">const</span> <span class="built_in">vector</span>&lt;<span class="keyword">bool</span>&gt;&amp; propagate_down, <span class="keyword">const</span> <span class="built_in">vector</span>&lt;Blob&lt;Dtype&gt;*&gt;&amp; bottom)</span> </span>&#123;</span><br><span class="line">    self_.attr(<span class="string">"backward"</span>)(top, propagate_down, bottom);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  bp::object self_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p><a href="http://chrischoy.github.io/research/making-caffe-layer/" target="_blank" rel="external">进一步了解使用C++创建新layer</a><br><strong>参考资料</strong></p>
+<ul>
+<li><a href="https://github.com/BVLC/caffe/pull/1703" target="_blank" rel="external">https://github.com/BVLC/caffe/pull/1703</a></li>
+<li><a href="https://gist.github.com//shelhamer/8d9a94cf75e6fb2df221" target="_blank" rel="external">https://gist.github.com//shelhamer/8d9a94cf75e6fb2df221</a></li>
+</ul>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/04/16/C-中的虚继承/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption"><</strong>
+      <div class="article-nav-title">
+        
+          C++中的虚
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/03/21/C-中的虚函数实现原理/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">C++中的虚函数实现原理</div>
+      <strong class="article-nav-caption">></strong>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<div class="share_jia">
+	<!-- JiaThis Button BEGIN -->
+	<div class="jiathis_style">
+		<span class="jiathis_txt">分享到: &nbsp; </span>
+		<a class="jiathis_button_facebook"></a> 
+    <a class="jiathis_button_twitter"></a>
+    <a class="jiathis_button_plus"></a> 
+    <a class="jiathis_button_tsina"></a>
+		<a class="jiathis_button_cqq"></a>
+		<a class="jiathis_button_douban"></a>
+		<a class="jiathis_button_weixin"></a>
+		<a class="jiathis_button_tumblr"></a>
+    <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	</div>
+	<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=1405949716054953" charset="utf-8"></script>
+	<!-- JiaThis Button END -->
+</div>
+
+
+
+
+
+
+<div class="duoshuo">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="Caffe-with-Python-Layer" data-title="在Caffe中使用Python Layer" data-url="http://withwsf.github.io/2016/04/14/Caffe-with-Python-Layer/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"true"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+    	<div class="footer-left">
+    		&copy; 2016 Withwsf
+    	</div>
+      	<div class="footer-right">
+      		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
+      	</div>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+
+
+<script>
+	var yiliaConfig = {
+		fancybox: true,
+		mathjax: true,
+		animate: true,
+		isHome: false,
+		isPost: true,
+		isArchive: false,
+		isTag: false,
+		isCategory: false,
+		open_in_new: true
+	}
+</script>
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js" type="text/javascript"></script>
+<script src="/js/main.js" type="text/javascript"></script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+  </div>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

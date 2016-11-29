@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" >
+  <title>Caffe中的Net类是如何工作的 | Wei Jin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Net类是Caffe中Blobs，Layers，Nets三个抽象层次中最高层的抽象。Nets类负责按照网络定义文件将需要的layers和中间blobs进行实例化，并将所有的Layers组合成一个有向无环图。Nets还提供了在整个网络上进行前向传播与后向传播的接口。下面从观察Net运行的角度来解析一下Net类如何工作。
+Net类数据成员概述下面对Net类中比较重要的数据成员进行说明：
+
+vector">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Caffe中的Net类是如何工作的">
+<meta property="og:url" content="http://withwsf.github.io/2016/05/24/Caffe中的Net类是如何工作的/index.html">
+<meta property="og:site_name" content="Wei Jin">
+<meta property="og:description" content="Net类是Caffe中Blobs，Layers，Nets三个抽象层次中最高层的抽象。Nets类负责按照网络定义文件将需要的layers和中间blobs进行实例化，并将所有的Layers组合成一个有向无环图。Nets还提供了在整个网络上进行前向传播与后向传播的接口。下面从观察Net运行的角度来解析一下Net类如何工作。
+Net类数据成员概述下面对Net类中比较重要的数据成员进行说明：
+
+vector">
+<meta property="og:updated_time" content="2016-11-29T13:47:45.932Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Caffe中的Net类是如何工作的">
+<meta name="twitter:description" content="Net类是Caffe中Blobs，Layers，Nets三个抽象层次中最高层的抽象。Nets类负责按照网络定义文件将需要的layers和中间blobs进行实例化，并将所有的Layers组合成一个有向无环图。Nets还提供了在整个网络上进行前向传播与后向传播的接口。下面从观察Net运行的角度来解析一下Net类如何工作。
+Net类数据成员概述下面对Net类中比较重要的数据成员进行说明：
+
+vector">
+  
+    <link rel="alternative" href="/atom.xml" title="Wei Jin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="http://www.picgifs.com/clip-art/cartoons/south-park/clip-art-south-park-362717.jpg">
+  
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="http://img01.deviantart.net/8e9f/i/2012/194/0/c/jake_the_dog_desktop_picture_by_partack-d571ypf.jpg" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">Withwsf</a></h1>
+		</hgroup>
+
+		
+		<p class="header-subtitle">We don&#39;t konw our destiny</p>
+		
+
+		
+			<div class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>Tags</li>
+						
+						
+						<li>Über</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives">所有文章</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<div class="social">
+							
+								<a class="zhihu" target="_blank" href="https://www.zhihu.com/people/wei_jin" title="zhihu">zhihu</a>
+					        
+						</div>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/C/" style="font-size: 16.67px;">C++</a> <a href="/tags/Caffe/" style="font-size: 16.67px;">Caffe</a> <a href="/tags/Python/" style="font-size: 10px;">Python</a> <a href="/tags/Torch/" style="font-size: 13.33px;">Torch</a> <a href="/tags/数据挖掘/" style="font-size: 10px;">数据挖掘</a> <a href="/tags/机器学习/" style="font-size: 20px;">机器学习</a> <a href="/tags/深度学习/" style="font-size: 13.33px;">深度学习</a> <a href="/tags/阅读经典/" style="font-size: 10px;">阅读经典</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">基本上无害 (withwsf#gmail.com)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide">Withwsf</h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<div class="profilepic">
+			
+				<img lazy-src="http://img01.deviantart.net/8e9f/i/2012/194/0/c/jake_the_dog_desktop_picture_by_partack-d571ypf.jpg" class="js-avatar">
+			
+			</div>
+			<hgroup>
+			  <h1 class="header-author">Withwsf</h1>
+			</hgroup>
+			
+			<p class="header-subtitle">We don&#39;t konw our destiny</p>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives">所有文章</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+				<div class="social">
+					
+						<a class="zhihu" target="_blank" href="https://www.zhihu.com/people/wei_jin" title="zhihu">zhihu</a>
+			        
+				</div>
+			</nav>
+		</header>				
+	</div>
+</nav>
+
+      <div class="body-wrap"><article id="post-Caffe中的Net类是如何工作的" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/05/24/Caffe中的Net类是如何工作的/" class="article-date">
+  	<time datetime="2016-05-24T12:21:47.000Z" itemprop="datePublished">2016-05-24</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Caffe中的Net类是如何工作的
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Caffe/">Caffe</a></li></ul>
+	</div>
+
+        
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Net类是Caffe中Blobs，Layers，Nets三个抽象层次中最高层的抽象。Nets类负责按照网络定义文件将需要的layers和中间blobs进行实例化，并将所有的Layers组合成一个有向无环图。Nets还提供了在整个网络上进行前向传播与后向传播的接口。下面从观察Net运行的角度来解析一下Net类如何工作。</p>
+<h3 id="Net_u7C7B_u6570_u636E_u6210_u5458_u6982_u8FF0"><a href="#Net_u7C7B_u6570_u636E_u6210_u5458_u6982_u8FF0" class="headerlink" title="Net类数据成员概述"></a>Net类数据成员概述</h3><p><strong>下面对Net类中比较重要的数据成员进行说明：</strong></p>
+<ul>
+<li><p><strong><code>vector&lt;shared_ptr&lt;Layer&lt;Dtype&gt; &gt; &gt; layers_;</code></strong><br>layers_中存放着网络的所有layers，也就是Net类的实例保存着网络定义文件中所有layer的实例</p>
+</li>
+<li><p><strong><code>vector&lt;shared_ptr&lt;Blob&lt;Dtype&gt; &gt; &gt; blobs_;</code></strong><br>blobs_中保存着网络所有的中间结果，即所有layer的输入数据（bottom blob）和输出数据（top blob）</p>
+</li>
+<li><p><strong><code>vector&lt;vector&lt;Blob&lt;Dtype&gt;*&gt; &gt; bottom_vecs_;</code></strong></p>
+</li>
+<li><p><strong><code>vector&lt;vector&lt;Blob&lt;Dtype&gt;*&gt; &gt; top_vecs_;</code></strong><br><code>bottom_vecs_</code>保存的是各个layer的bottom blob的指针，这些指针指向<code>blobs_</code>中的blob。<code>bottom_ves.size()</code>与网络layer的数量相等，由于layer可能有多个bottom blob，所以使用<code>vector&lt;Blob&lt;Dtype&gt;*&gt;</code>来存放layer-wise的bottom blob。同理可以知道<code>top_vecs</code>的作用。</p>
+</li>
+<li><p><strong><code>vector&lt;shared_ptr&lt;Blob&lt;Dtype&gt; &gt; &gt; params_;</code></strong></p>
+</li>
+<li><strong><code>vector&lt;Blob&lt;Dtype&gt;*&gt; learnable_params_;</code></strong><br>上述两个数据成员存放的是指向网络参数的指针，注意，直接拥有参数的是layer，<code>params_</code>保存的只是网络中各个layer的参数的指针；而<code>learnable_params_</code>也如其名字所指，保存的是各个layer中可以被学习的参数。</li>
+</ul>
+<h3 id="Net_u7C7B_u7684_u5B9E_u4F8B_u5316_28_u4E00_u4E2A_u7F51_u7EDC_u7684_u5EFA_u7ACB_29"><a href="#Net_u7C7B_u7684_u5B9E_u4F8B_u5316_28_u4E00_u4E2A_u7F51_u7EDC_u7684_u5EFA_u7ACB_29" class="headerlink" title="Net类的实例化(一个网络的建立)"></a>Net类的实例化(一个网络的建立)</h3><h4 id="u6784_u9020_u51FD_u6570"><a href="#u6784_u9020_u51FD_u6570" class="headerlink" title="构造函数"></a>构造函数</h4><p>Net类有两个构造函数，分别是<code>Net(const NetParameter&amp; param, const Net* root_net)</code>和<code>Net(const string&amp; param_file, Phase phase, const Net* root_net)</code>,前者接受<code>NetParameter</code>的const引用作为参数(后面参数root_net与多GPU并行训练有关，忽略掉并不影响理解)，后者接受定义网络prototxt文件路径和<code>phase</code>作为输入。<br>前者直接调用<code>Init()</code>函数，后者将prototxt文件解析为<code>NetPrameter</code>后调用<code>Init()</code>函数。</p>
+<h4 id="Init_28_29_u51FD_u6570"><a href="#Init_28_29_u51FD_u6570" class="headerlink" title="Init()函数"></a>Init()函数</h4><p><code>Init()</code>函数承担初始化一个网络的任务，摘取主干代码描述如下（忽略细节，大致描述过程）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> layer_id = <span class="number">0</span>; layer_id &lt; param.layer_size(); ++layer_id) &#123;<span class="comment">//param是网络参数，layer_size()返回网络拥有的层数</span></span><br><span class="line">    <span class="keyword">const</span> LayerParameter&amp; layer_param = param.layer(layer_id);<span class="comment">//获取当前layer的参数</span></span><br><span class="line">    layers_.push_back(LayerRegistry&lt;Dtype&gt;::CreateLayer(layer_param));<span class="comment">//根据参数实例化layer</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//下面的两个for循环将此layer的bottom blob的指针和top blob的指针放入bottom_vecs_和top_vecs_,bottom blob和top blob的实例全都存放在blobs_中。相邻的两层，前一层的top blob是后一层的bottom blob，所以blobs_的同一个blob既可能是bottom blob，也可能使top blob。</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> bottom_id = <span class="number">0</span>; bottom_id &lt; layer_param.bottom_size();++bottom_id) &#123;</span><br><span class="line">       <span class="keyword">const</span> <span class="keyword">int</span> blob_id=AppendBottom(param,layer_id,bottom_id,&amp;available_blobs,&amp;blob_name_to_idx);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> top_id = <span class="number">0</span>; top_id &lt; num_top; ++top_id) &#123;</span><br><span class="line">       AppendTop(param, layer_id, top_id, &amp;available_blobs, &amp;blob_name_to_idx);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//接下来的工作是将每层的parameter的指针塞进params_，尤其是learnable_params_。</span></span><br><span class="line">   <span class="keyword">const</span> <span class="keyword">int</span> num_param_blobs = layers_[layer_id]-&gt;blobs().size();</span><br><span class="line">   <span class="keyword">for</span> (<span class="keyword">int</span> param_id = <span class="number">0</span>; param_id &lt; num_param_blobs; ++param_id) &#123;</span><br><span class="line">       AppendParam(param, layer_id, param_id);</span><br><span class="line">       <span class="comment">//AppendParam负责具体的dirtywork</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h4 id="u521D_u59CB_u5316_u4E4B_u540E"><a href="#u521D_u59CB_u5316_u4E4B_u540E" class="headerlink" title="初始化之后"></a>初始化之后</h4><p>经过上述过程的网络，参数都是随机产生或者指定的，如果进行预测或这fine-tuning，就需要将载入预训练的权值，Net类提供的函数<code>CopyTrainedLayersFrom(const string&amp; trained_file)</code>可以实现这个过程。</p>
+<h3 id="u7F51_u7EDC_u7684_u8FD0_u884C_28_u524D_u5411_u4F20_u64AD_2C__u53CD_u5411_u4F20_u64AD_u548C_u6743_u503C_u66F4_u65B0_29"><a href="#u7F51_u7EDC_u7684_u8FD0_u884C_28_u524D_u5411_u4F20_u64AD_2C__u53CD_u5411_u4F20_u64AD_u548C_u6743_u503C_u66F4_u65B0_29" class="headerlink" title="网络的运行(前向传播, 反向传播和权值更新)"></a>网络的运行(前向传播, 反向传播和权值更新)</h3><p>Net类可以提供网络级的前向前向传播、反向传播和权值更新(即在网络的所有层上有序执行前述动作)。</p>
+<h4 id="u524D_u5411_u4F20_u64AD"><a href="#u524D_u5411_u4F20_u64AD" class="headerlink" title="前向传播"></a>前向传播</h4><p>与前向传播相关的函数有<code>Forward(const vector&lt;Blob&lt;Dtype&gt;*&gt; &amp; bottom, Dtype* loss)</code>,<code>Forward(Dtype* loss)</code>,<code>ForwardTo(int end)</code>，<code>ForwardFrom(int start)</code>和<code>ForwardFromTo(int start, int end)</code>，前面的四个函数都是对第五个函数封装，第五个函数定义如下：<br>    <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Dtype&gt;</span><br><span class="line">Dtype Net&lt;Dtype&gt;::ForwardFromTo(<span class="keyword">int</span> start, <span class="keyword">int</span> end) &#123;</span><br><span class="line">  CHECK_GE(start, <span class="number">0</span>);</span><br><span class="line">  CHECK_LT(end, layers_.size());</span><br><span class="line">  Dtype loss = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = start; i &lt;= end; ++i) &#123;</span><br><span class="line">    <span class="comment">// LOG(ERROR) &lt;&lt; "Forwarding " &lt;&lt; layer_names_[i];</span></span><br><span class="line">    Dtype layer_loss = layers_[i]-&gt;Forward(bottom_vecs_[i], top_vecs_[i]);</span><br><span class="line">    loss += layer_loss;</span><br><span class="line">    <span class="keyword">if</span> (debug_info_) &#123; ForwardDebugInfo(i); &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> loss;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<pre><code>重点语句是`layers_[i]-&gt;Forward(bottom_vecs_[i], top_vecs_[i]);`，使用layer对应bottom blob和top blob进行前向传播。
+</code></pre><h4 id="u53CD_u5411_u4F20_u64AD"><a href="#u53CD_u5411_u4F20_u64AD" class="headerlink" title="反向传播"></a>反向传播</h4><p>与前向传播一样，反向传播也有很多相关函数，但都是对<code>BackwardFromTo(int start, int end)</code>的封装。<br><figure class="highlight"><figcaption><span>Net<dtype>::BackwardFromTo(int start, int end) &#123;</dtype></span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">  CHECK_GE(end, 0);&#10;  CHECK_LT(start, layers_.size());&#10;  for (int i = start; i &#62;= end; --i) &#123;&#10;    if (layer_need_backward_[i]) &#123;&#10;      layers_[i]-&#62;Backward(top_vecs_[i], bottom_need_backward_[i], bottom_vecs_[i]);&#10;      if (debug_info_) &#123; BackwardDebugInfo(i); &#125;&#10;    &#125;&#10;  &#125;&#10;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>与前向传播相反，反向传播是从尾到头进行的。</p>
+<h4 id="u6743_u503C_u66F4_u65B0"><a href="#u6743_u503C_u66F4_u65B0" class="headerlink" title="权值更新"></a>权值更新</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Dtype&gt;</span><br><span class="line"><span class="keyword">void</span> Net&lt;Dtype&gt;::Update() &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; learnable_params_.size(); ++i) &#123;</span><br><span class="line">    learnable_params_[i]-&gt;Update();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在训练的过程中layer的权值要根据反向传播并累积的梯度进行更新，更新的过程由<code>Update()</code>完成。这个函数的功能十分明确，对每个存储learnable_parms的blob调用blob的<code>Update()</code>函数，来更新权值。</p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2016/05/23/在Windows阅读Caffe代码/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">在Windows中阅读Caffe代码</div>
+      <strong class="article-nav-caption">></strong>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<div class="share_jia">
+	<!-- JiaThis Button BEGIN -->
+	<div class="jiathis_style">
+		<span class="jiathis_txt">分享到: &nbsp; </span>
+		<a class="jiathis_button_facebook"></a> 
+    <a class="jiathis_button_twitter"></a>
+    <a class="jiathis_button_plus"></a> 
+    <a class="jiathis_button_tsina"></a>
+		<a class="jiathis_button_cqq"></a>
+		<a class="jiathis_button_douban"></a>
+		<a class="jiathis_button_weixin"></a>
+		<a class="jiathis_button_tumblr"></a>
+    <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	</div>
+	<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=1405949716054953" charset="utf-8"></script>
+	<!-- JiaThis Button END -->
+</div>
+
+
+
+
+
+
+<div class="duoshuo">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="Caffe中的Net类是如何工作的" data-title="Caffe中的Net类是如何工作的" data-url="http://withwsf.github.io/2016/05/24/Caffe中的Net类是如何工作的/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"true"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+    	<div class="footer-left">
+    		&copy; 2016 Withwsf
+    	</div>
+      	<div class="footer-right">
+      		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
+      	</div>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+
+
+<script>
+	var yiliaConfig = {
+		fancybox: true,
+		mathjax: true,
+		animate: true,
+		isHome: false,
+		isPost: true,
+		isArchive: false,
+		isTag: false,
+		isCategory: false,
+		open_in_new: true
+	}
+</script>
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js" type="text/javascript"></script>
+<script src="/js/main.js" type="text/javascript"></script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+  </div>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>
